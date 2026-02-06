@@ -1,79 +1,157 @@
 
-import { TaxInputs, TaxResult, TaxScaleEntry } from '../types';
+import { TaxInputs, TaxResult, DetailedBreakdown } from '../types';
 import { TAX_CONSTANTS, SOCIAL_SECURITY_RATE } from '../constants';
 
 export const calculateTax = (inputs: TaxInputs): TaxResult => {
   const periodData = (TAX_CONSTANTS as any)[inputs.period];
-  
-  // 1. Sueldo Bruto Anual (incluyendo Aguinaldo si aplica)
-  const monthlyGross = inputs.grossSalary;
-  const annualGross = monthlyGross * (inputs.aguinaldo ? 13 : 12);
-  
-  // 2. Descuentos de Seguridad Social (estimados al 17%)
-  const socialSecurityAnnual = annualGross * SOCIAL_SECURITY_RATE;
-  const annualNetPreTax = annualGross - socialSecurityAnnual;
-  
-  // 3. Deducciones Personales (Art. 30)
-  const gni = periodData.gni;
-  const specialDeduction = periodData.specialDeduction;
-  
-  // 4. Deducciones Familiares
-  let familyDeductions = 0;
-  if (inputs.deductions.spouse) familyDeductions += periodData.spouse;
-  familyDeductions += (inputs.deductions.children * periodData.child);
-  familyDeductions += (inputs.deductions.otherDependents * (periodData.otherDependent || periodData.child));
-  
-  // 5. Otras Deducciones Permitidas (Topes aproximados según Ley 27.743 y vigentes)
-  let otherDeductions = 0;
-  
-  // Deducción por Alquiler de Casa-Habitación: 10% del total pagado según nuevas normativas
-  const rentDeduction = inputs.deductions.rent * 0.10;
-  otherDeductions += rentDeduction;
+  const m = inputs.month;
+  const factor = m / 12;
 
-  otherDeductions += Math.min(inputs.deductions.mortgageInterest, 20000); // Tope histórico desactualizado
-  otherDeductions += Math.min(inputs.deductions.domesticHelp, gni);
-  otherDeductions += inputs.deductions.medicalInsurance * 12; 
-  otherDeductions += inputs.deductions.educationalExpenses;
-  otherDeductions += (inputs.deductions.lifeInsurance || 0);
-  otherDeductions += (inputs.deductions.others || 0);
+  // 1. Aportes de Ley (17%) con Tope de Base Imponible (MOPRE)
+  const monthlyGross = inputs.grossSalary;
+  const baseForSocialSecurity = Math.min(monthlyGross, periodData.maxSocialSecurityBase);
+  const monthlySocialSecurity = baseForSocialSecurity * SOCIAL_SECURITY_RATE;
   
-  const totalDeductions = gni + specialDeduction + familyDeductions + otherDeductions;
+  // Sueldo Neto antes de Ganancias
+  const monthlyNetPreTax = monthlyGross - monthlySocialSecurity;
+
+  // 2. SAC Proporcional (8.33% s/ neto) - Ley 27.743
+  const monthlySAC = monthlyNetPreTax * (1 / 12);
   
-  // 6. Ganancia Sujeta a Impuesto (Base Imponible)
-  const taxableIncome = Math.max(0, annualNetPreTax - totalDeductions);
+  // Base Imponible Bruta Mensual Acumulada
+  const cumulativeNetPreTax = (monthlyNetPreTax + monthlySAC) * m;
+
+  // 3. Deducciones Personales (Art. 30) - Acumuladas
+  const gniAcc = periodData.gni * factor;
+  const specialDeductionBase = inputs.isIndependent 
+    ? periodData.specialDeductionIndependent 
+    : periodData.specialDeductionEmployee;
+  const specialDeductionAcc = specialDeductionBase * factor;
+
+  // 4. Deducciones Familiares (Ya vienen anualizadas en constants, aplicamos factor de meses)
+  const spouseAmount = inputs.deductions.spouse ? periodData.spouse * factor : 0;
+  const childrenAmount = (inputs.deductions.children * periodData.child) * factor;
+  const otherDependentsAmount = (inputs.deductions.otherDependents * (periodData.otherDependent || periodData.child)) * factor;
+  const familyTotal = spouseAmount + childrenAmount + otherDependentsAmount;
+
+  // 5. Deducciones Generales (SIRADIG)
   
-  // 7. Aplicación de la Escala Progresiva (Art. 94)
-  let annualTax = 0;
+  // CORRECCIÓN ALQUILER: 40% del monto pagado ACUMULADO, con tope del MNI (GNI) acumulado.
+  // inputs.deductions.rent es el valor MENSUAL que paga el usuario.
+  const cumulativeRentPaid = inputs.deductions.rent * m;
+  const rentAmount = Math.min(cumulativeRentPaid * 0.40, gniAcc);
+
+  // Intereses Hipotecarios: Tope anual fijo, lo mensualizamos según el mes de cálculo.
+  const mortgageAmount = Math.min(inputs.deductions.mortgageInterest * factor, periodData.topes.mortgage * factor);
+  
+  // Servicio Doméstico: Tope anual es el MNI, lo mensualizamos.
+  const domesticHelpAmount = Math.min(inputs.deductions.domesticHelp * factor, gniAcc);
+  
+  // Gastos Educativos: Tope anual es el 40% del MNI, lo mensualizamos.
+  const educationAmount = Math.min(inputs.deductions.educationalExpenses * factor, gniAcc * 0.40);
+  
+  // Seguros: Tope anual fijo.
+  const insuranceAmount = Math.min((inputs.deductions.lifeInsurance + inputs.deductions.retirementPlan) * factor, periodData.topes.insurance * factor);
+  
+  // Sepelio: Tope anual fijo (usualmente muy bajo por ley).
+  const burialAmount = Math.min(inputs.deductions.burialExpenses * factor, periodData.topes.burial * factor);
+  
+  // Viáticos: Tope 40% del MNI.
+  const viaticosAmount = Math.min(inputs.deductions.viaticos * factor, gniAcc * 0.40);
+  
+  // Indumentaria: No tiene tope específico pero debe ser gasto real.
+  const equipmentAmount = inputs.deductions.equipmentClothing * factor;
+
+  // Salud y Donaciones (Tope 5% Ganancia Neta Acumulada)
+  const fivePercentTope = cumulativeNetPreTax * 0.05;
+  // medicalInsurance es MENSUAL, medicalFees y donations son ANUALES (SIRADIG).
+  const healthRaw = (inputs.deductions.medicalInsurance * m) + ((inputs.deductions.medicalFees + inputs.deductions.donations) * factor);
+  const appliedHealthDonations = Math.min(healthRaw, fivePercentTope);
+  
+  // Prorrateo del tope entre los 3 conceptos si se excede
+  const ratio = healthRaw > 0 ? appliedHealthDonations / healthRaw : 1;
+  const medicalInsuranceAmount = (inputs.deductions.medicalInsurance * m) * ratio;
+  const medicalFeesAmount = (inputs.deductions.medicalFees * factor * 0.40) * ratio; // Se deduce solo el 40% de honorarios médicos
+  const donationsAmount = (inputs.deductions.donations * factor) * ratio;
+
+  const totalOtherDeductions = rentAmount + mortgageAmount + domesticHelpAmount + educationAmount + 
+                               insuranceAmount + burialAmount + viaticosAmount + equipmentAmount + appliedHealthDonations;
+
+  const totalDeductionsAcc = gniAcc + specialDeductionAcc + familyTotal + totalOtherDeductions;
+
+  // 6. Base Imponible Final Acumulada
+  const taxableIncomeAcc = Math.max(0, cumulativeNetPreTax - totalDeductionsAcc);
+
+  // 7. Aplicación de Escala Art. 94 (Sobre Base Acumulada)
+  let cumulativeTax = 0;
   const scale = periodData.scale;
-  
   for (let i = scale.length - 1; i >= 0; i--) {
     const entry = scale[i];
-    if (taxableIncome > entry.lowerBound) {
-      const excess = taxableIncome - entry.lowerBound;
-      annualTax = entry.fixedCharge + (excess * entry.rate);
+    const lb = entry.lowerBound * factor;
+    const fc = entry.fixedCharge * factor;
+    if (taxableIncomeAcc >= lb) {
+      cumulativeTax = fc + ((taxableIncomeAcc - lb) * entry.rate);
       break;
     }
   }
-  
-  const monthlyTax = annualTax / 12;
-  const monthlyNetPreTax = monthlyGross * (1 - SOCIAL_SECURITY_RATE);
-  const monthlyNetPostTax = monthlyNetPreTax - monthlyTax;
-  const effectiveRate = annualNetPreTax > 0 ? (annualTax / annualNetPreTax) * 100 : 0;
+
+  // 8. Cálculo de retención del mes (Diferencia entre acumulado actual y acumulado anterior proyectado)
+  const previousMonthsFactor = (m - 1) / 12;
+  let prevCumulativeTax = 0;
+  if (m > 1) {
+    const prevNetPre = (monthlyNetPreTax + monthlySAC) * (m - 1);
+    // Prorrateamos las deducciones acumuladas al mes anterior
+    const prevDeductions = totalDeductionsAcc * (m - 1) / m;
+    const prevTaxable = Math.max(0, prevNetPre - prevDeductions);
+    for (let i = scale.length - 1; i >= 0; i--) {
+      const lb = scale[i].lowerBound * previousMonthsFactor;
+      const fc = scale[i].fixedCharge * previousMonthsFactor;
+      if (prevTaxable >= lb) {
+        prevCumulativeTax = fc + ((prevTaxable - lb) * scale[i].rate);
+        break;
+      }
+    }
+  }
+
+  const monthlyTax = Math.max(0, cumulativeTax - prevCumulativeTax);
+  const pocketSalary = monthlyNetPreTax - monthlyTax;
+
+  const breakdown: DetailedBreakdown = {
+    baseDeduction: gniAcc,
+    specialDeduction: specialDeductionAcc,
+    spouseAmount,
+    childrenAmount,
+    otherDependentsAmount,
+    rentAmount,
+    mortgageAmount,
+    domesticHelpAmount,
+    medicalInsuranceAmount,
+    medicalFeesAmount,
+    insuranceAmount,
+    educationAmount,
+    donationsAmount,
+    burialAmount,
+    equipmentAmount,
+    viaticosAmount
+  };
 
   return {
+    month: m,
     grossMonthly: monthlyGross,
     netMonthlyPreTax: monthlyNetPreTax,
-    monthlyTax: Math.max(0, monthlyTax),
-    netMonthlyPostTax: Math.max(0, monthlyNetPostTax),
-    effectiveRate: effectiveRate,
-    annualTotalTax: annualTax,
-    taxableIncome: taxableIncome,
-    totalDeductions: totalDeductions,
-    breakdown: {
-      baseDeduction: gni,
-      specialDeduction: specialDeduction,
-      familyDeductions: familyDeductions,
-      otherDeductions: otherDeductions
-    }
+    monthlyTax,
+    cumulativeTax,
+    netMonthlyPostTax: pocketSalary,
+    effectiveRate: (cumulativeTax / (cumulativeNetPreTax || 1)) * 100,
+    annualProjectedTax: cumulativeTax / (factor || 1),
+    taxableIncomeCumulative: taxableIncomeAcc,
+    totalDeductionsCumulative: totalDeductionsAcc,
+    steps: {
+      cumulativeGross: monthlyGross * m,
+      cumulativeSAC: monthlySAC * m,
+      cumulativeSocialSecurity: monthlySocialSecurity * m,
+      cumulativeNetPreTax
+    },
+    breakdown
   };
 };
