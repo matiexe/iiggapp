@@ -5,8 +5,8 @@ import { calculateTax } from './services/taxEngine';
 import { TAX_CONSTANTS } from './constants';
 import { GoogleGenAI } from "@google/genai";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
+import { pdf } from '@react-pdf/renderer';
+import { TaxReportPDF } from './TaxReportPDF';
 
 // === CONFIGURACIÓN DE SEGURIDAD ===
 // La clave se obtiene de las variables de entorno para evitar exposición en el código fuente.
@@ -28,7 +28,7 @@ const ArgentinaFlag = () => (
 
 const App: React.FC = () => {
   const [inputs, setInputs] = useState<TaxInputs>({
-    period: '2025',
+    period: '2026',
     month: 1,
     grossSalary: 4500000,
     aguinaldo: true,
@@ -59,7 +59,6 @@ const App: React.FC = () => {
     recommendation: 10
   });
 
-  const pdfReportRef = useRef<HTMLDivElement>(null);
 
   const result = useMemo(() => calculateTax(inputs), [inputs]);
 
@@ -106,32 +105,33 @@ const App: React.FC = () => {
   };
 
   const exportToPDF = async () => {
-    if (!pdfReportRef.current) return;
     setIsExporting(true);
+    try {
+      // Generamos el documento PDF usando el motor de @react-pdf/renderer
+      const blob = await pdf(
+        <TaxReportPDF
+          inputs={inputs}
+          result={result}
+          monthName={MONTHS[inputs.month - 1]}
+        />
+      ).toBlob();
 
-    setTimeout(async () => {
-      try {
-        const canvas = await html2canvas(pdfReportRef.current!, {
-          scale: 3,
-          useCORS: true,
-          logging: false,
-          backgroundColor: '#ffffff'
-        });
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      // Creamos un link de descarga para el usuario
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Reporte_Ganancias_AR_${MONTHS[inputs.month - 1]}_${inputs.period}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
 
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save(`Reporte_Ganancias_AR_${MONTHS[inputs.month - 1]}_${inputs.period}.pdf`);
-
-        setShowThanksModal(true);
-      } catch (error) {
-        console.error("Error al exportar PDF:", error);
-      } finally {
-        setIsExporting(false);
-      }
-    }, 100);
+      setShowThanksModal(true);
+    } catch (error) {
+      console.error("Error al exportar PDF:", error);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleFeedbackSubmit = async (e: React.FormEvent) => {
@@ -238,8 +238,8 @@ const App: React.FC = () => {
             <div className="flex flex-col gap-1">
               <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Año Fiscal</span>
               <select name="period" value={inputs.period} onChange={handleInputChange} className="bg-white/10 border border-white/20 rounded-xl px-4 py-2 font-bold outline-none text-white appearance-none cursor-pointer hover:bg-white/20">
-                <option value="2025" className="text-slate-800">2025</option>
                 <option value="2026" className="text-slate-800">2026</option>
+                <option value="2025" className="text-slate-800">2025</option>
               </select>
             </div>
             <div className="flex flex-col gap-1">
@@ -802,96 +802,6 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* PLANTILLA DE REPORTE PDF (OCULTA) */}
-      <div className="fixed left-[-9999px] top-0 w-[210mm] bg-white text-slate-900 p-[20mm]" ref={pdfReportRef}>
-        <div className="border-b-4 border-slate-900 pb-8 mb-8 flex justify-between items-end">
-          <div>
-            <h1 className="text-3xl font-black uppercase tracking-tighter text-slate-900">Liquidación de Ganancias</h1>
-            <p className="text-slate-500 font-bold uppercase text-xs tracking-widest">Reporte Técnico de Retención Mensual</p>
-          </div>
-          <div className="text-right">
-            <p className="text-xl font-black text-slate-900">{MONTHS[inputs.month - 1]} {inputs.period}</p>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">ARCA (Ex-AFIP) Ley 27.743</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-12 mb-12">
-          <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Resumen de Haberes</p>
-            <div className="space-y-3">
-              <div className="flex justify-between border-b border-slate-200 pb-2">
-                <span className="text-sm font-medium text-slate-600">Sueldo Bruto</span>
-                <span className="text-sm font-bold">$ {inputs.grossSalary.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between border-b border-slate-200 pb-2">
-                <span className="text-sm font-medium text-slate-600">Neto Pre-Impuesto</span>
-                <span className="text-sm font-bold">$ {Math.round(result.netMonthlyPreTax).toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-rose-600 pt-2">
-                <span className="text-sm font-black uppercase">Retención Ganancias</span>
-                <span className="text-sm font-black">$ {Math.round(result.monthlyTax).toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-emerald-600 pt-4 border-t-2 border-slate-200">
-                <span className="text-base font-black uppercase">Sueldo de Bolsillo</span>
-                <span className="text-base font-black">$ {Math.round(result.netMonthlyPostTax).toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-8">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Datos del Contribuyente</p>
-            <div className="grid grid-cols-1 gap-2 text-xs">
-              <p><span className="text-slate-400 font-bold uppercase mr-2">Condición:</span> {inputs.isIndependent ? 'Autónomo' : 'Relación de Dependencia'}</p>
-              <p><span className="text-slate-400 font-bold uppercase mr-2">Cargas Familia:</span> {inputs.deductions.children + (inputs.deductions.spouse ? 1 : 0)} persona(s)</p>
-              <p><span className="text-slate-400 font-bold uppercase mr-2">Tramo Alícuota:</span> {(currentScaleStep.rate * 100).toFixed(0)}%</p>
-              <p><span className="text-slate-400 font-bold uppercase mr-2">Tasa Efectiva:</span> {((result.monthlyTax / (result.grossMonthly || 1)) * 100).toFixed(2)}%</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mb-12">
-          <h3 className="text-sm font-black uppercase tracking-widest text-slate-900 mb-6 border-l-4 border-indigo-600 pl-4">Detalle de Deducciones Acumuladas</h3>
-          <table className="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr className="bg-slate-900 text-white font-bold uppercase tracking-widest">
-                <th className="p-4 rounded-tl-xl">Concepto</th>
-                <th className="p-4 text-right rounded-tr-xl">Monto Acumulado ($)</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 border-x border-b border-slate-100">
-              <tr><td className="p-4 font-medium">Ganancia No Imponible (MNI)</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.baseDeduction).toLocaleString()}</td></tr>
-              <tr><td className="p-4 font-medium">Deducción Especial (Inc. c)</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.specialDeduction).toLocaleString()}</td></tr>
-              {result.breakdown.spouseAmount > 0 && <tr><td className="p-4 font-medium">Carga: Cónyuge / Conviviente</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.spouseAmount).toLocaleString()}</td></tr>}
-              {result.breakdown.childrenAmount > 0 && <tr><td className="p-4 font-medium">Carga: Hijos / Hijastros</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.childrenAmount).toLocaleString()}</td></tr>}
-              {result.breakdown.medicalInsuranceAmount > 0 && <tr><td className="p-4 font-medium">Medicina Prepaga</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.medicalInsuranceAmount).toLocaleString()}</td></tr>}
-              {result.breakdown.rentAmount > 0 && <tr><td className="p-4 font-medium">Alquiler Vivienda (Tope MNI)</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.rentAmount).toLocaleString()}</td></tr>}
-              {result.breakdown.educationAmount > 0 && <tr><td className="p-4 font-medium">Gastos Educativos</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.educationAmount).toLocaleString()}</td></tr>}
-              <tr className="bg-slate-50 font-black">
-                <td className="p-4">TOTAL DEDUCCIONES COMPUTADAS</td>
-                <td className="p-4 text-right font-mono">$ {Math.round(result.totalDeductionsCumulative).toLocaleString()}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div className="bg-slate-900 text-white p-8 rounded-3xl">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Base Imponible Neta Acumulada</p>
-              <p className="text-xl font-mono font-black">$ {Math.round(result.taxableIncomeCumulative).toLocaleString()}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Impuesto a Retener en Recibo</p>
-              <p className="text-4xl font-mono font-black">$ {Math.round(result.monthlyTax).toLocaleString()}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-16 pt-8 border-t border-slate-100 text-[9px] text-slate-400 text-center uppercase font-black tracking-[0.2em] space-y-2">
-          <p>Este documento es una estimación informativa no vinculante.</p>
-          <p>Calculadora Ganancias Argentina 🇦🇷 • Generado automáticamente</p>
-        </div>
-      </div>
     </div>
   );
 };
