@@ -10,18 +10,18 @@ import { jsPDF } from 'jspdf';
 
 // === CONFIGURACIÓN DE SEGURIDAD ===
 // La clave se obtiene de las variables de entorno para evitar exposición en el código fuente.
-const WEB3FORMS_ACCESS_KEY = process.env.WEB3FORMS_ACCESS_KEY || ""; 
+const WEB3FORMS_ACCESS_KEY = process.env.WEB3FORMS_ACCESS_KEY || "";
 
 const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
 const ArgentinaFlag = () => (
   <div className="w-12 h-12 md:w-16 md:h-16 shrink-0 rounded-full overflow-hidden border-2 border-white/20 shadow-2xl mr-4 md:mr-6 -mt-2 md:-mt-3">
     <svg className="w-full h-full object-cover" viewBox="0 0 640 480" preserveAspectRatio="xMidYMid slice">
-      <path fill="#74acdf" d="M0 0h640v160H0z"/>
-      <path fill="#fff" d="M0 160h640v160H0z"/>
-      <path fill="#74acdf" d="M0 320h640v160H0z"/>
-      <circle cx="320" cy="240" r="44" fill="#f6b43e"/>
-      <path fill="#f6b43e" d="M320 186l10 24 25-10-10 25 24 10-24 10 10 25-25-10-10 24-10-24-25 10 10-25-24-10 24-10-10-25 25 10 10-24z"/>
+      <path fill="#74acdf" d="M0 0h640v160H0z" />
+      <path fill="#fff" d="M0 160h640v160H0z" />
+      <path fill="#74acdf" d="M0 320h640v160H0z" />
+      <circle cx="320" cy="240" r="44" fill="#f6b43e" />
+      <path fill="#f6b43e" d="M320 186l10 24 25-10-10 25 24 10-24 10 10 25-25-10-10 24-10-24-25 10 10-25-24-10 24-10-10-25 25 10 10-24z" />
     </svg>
   </div>
 );
@@ -108,7 +108,7 @@ const App: React.FC = () => {
   const exportToPDF = async () => {
     if (!pdfReportRef.current) return;
     setIsExporting(true);
-    
+
     setTimeout(async () => {
       try {
         const canvas = await html2canvas(pdfReportRef.current!, {
@@ -121,10 +121,10 @@ const App: React.FC = () => {
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        
+
         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
         pdf.save(`Reporte_Ganancias_AR_${MONTHS[inputs.month - 1]}_${inputs.period}.pdf`);
-        
+
         setShowThanksModal(true);
       } catch (error) {
         console.error("Error al exportar PDF:", error);
@@ -141,11 +141,11 @@ const App: React.FC = () => {
       return;
     }
     setIsSendingFeedback(true);
-    
+
     try {
       const response = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "Accept": "application/json"
         },
@@ -224,8 +224,8 @@ const App: React.FC = () => {
             <div>
               <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight">Calculadora Ganancias</h1>
               <p className="text-indigo-400 font-bold mt-1">Motor de cálculo Ley 27.743 • Argentina {inputs.period}</p>
-              
-              <button 
+
+              <button
                 onClick={() => setShowScaleModal(true)}
                 className="mt-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white transition-colors py-2 px-4 bg-white/5 rounded-full border border-white/10 hover:bg-white/10"
               >
@@ -267,13 +267,13 @@ const App: React.FC = () => {
                 <label className={labelBaseClass}>Sueldo Bruto Mensual</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
-                  <input 
-                    type="number" 
-                    name="grossSalary" 
-                    value={inputs.grossSalary === 0 ? '' : inputs.grossSalary} 
-                    onChange={handleInputChange} 
+                  <input
+                    type="number"
+                    name="grossSalary"
+                    value={inputs.grossSalary === 0 ? '' : inputs.grossSalary}
+                    onChange={handleInputChange}
                     placeholder="Monto Bruto..."
-                    className={inputBaseClass + " text-xl font-mono font-bold pl-10 py-3"} 
+                    className={inputBaseClass + " text-xl font-mono font-bold pl-10 py-3"}
                   />
                 </div>
               </div>
@@ -284,7 +284,7 @@ const App: React.FC = () => {
                     <p className="text-[10px] text-slate-400">Prorrateo 8.33% (1/12)</p>
                   </div>
                   <div className="w-4 h-4 bg-indigo-500 rounded-full flex items-center justify-center shadow-sm">
-                     <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
                   </div>
                 </div>
                 <label className="flex items-center gap-3 p-4 bg-indigo-50/50 rounded-2xl cursor-pointer hover:bg-indigo-100/50 transition-all group border border-indigo-100 hover:border-indigo-300">
@@ -301,8 +301,8 @@ const App: React.FC = () => {
           <div className="bg-white rounded-[32px] shadow-2xl border border-slate-100 overflow-hidden">
             <div className="flex border-b border-slate-100">
               {(['family', 'home', 'health', 'others'] as const).map(tab => (
-                <button 
-                  key={tab} 
+                <button
+                  key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`flex-1 py-4 text-[10px] font-black uppercase tracking-tighter transition-all relative ${activeTab === tab ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'}`}
                 >
@@ -311,7 +311,7 @@ const App: React.FC = () => {
                 </button>
               ))}
             </div>
-            
+
             <div className="p-7 min-h-[300px]">
               {activeTab === 'family' && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -401,59 +401,59 @@ const App: React.FC = () => {
 
         <div className="lg:col-span-7 space-y-8">
           <div className="bg-white p-8 rounded-[40px] shadow-2xl border border-slate-100 flex flex-col md:flex-row items-center gap-10 relative overflow-hidden group">
-             <div className="absolute -right-20 -top-20 w-64 h-64 bg-emerald-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-             <div className="flex-1 space-y-4 relative z-10">
-                <span className="text-[11px] font-black text-indigo-500 uppercase tracking-widest">Sueldo Neto de Bolsillo</span>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold text-slate-400">$</span>
-                  <h3 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tight">{Math.round(result.netMonthlyPostTax).toLocaleString()}</h3>
+            <div className="absolute -right-20 -top-20 w-64 h-64 bg-emerald-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+            <div className="flex-1 space-y-4 relative z-10">
+              <span className="text-[11px] font-black text-indigo-500 uppercase tracking-widest">Sueldo Neto de Bolsillo</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold text-slate-400">$</span>
+                <h3 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tight">{Math.round(result.netMonthlyPostTax).toLocaleString()}</h3>
+              </div>
+              <div className="flex gap-8 pt-6 border-t border-slate-100">
+                <div className="flex-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Retención Mensual</span>
+                  <p className="text-2xl font-black text-rose-500">$ {Math.round(result.monthlyTax).toLocaleString()}</p>
                 </div>
-                <div className="flex gap-8 pt-6 border-t border-slate-100">
-                   <div className="flex-1">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Retención Mensual</span>
-                      <p className="text-2xl font-black text-rose-500">$ {Math.round(result.monthlyTax).toLocaleString()}</p>
-                   </div>
-                   <div className="flex-1">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Alícuota Efectiva</span>
-                      <p className="text-2xl font-black text-slate-800">{((result.monthlyTax / (result.grossMonthly || 1)) * 100).toFixed(1)}%</p>
-                   </div>
+                <div className="flex-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Alícuota Efectiva</span>
+                  <p className="text-2xl font-black text-slate-800">{((result.monthlyTax / (result.grossMonthly || 1)) * 100).toFixed(1)}%</p>
                 </div>
-             </div>
-             
-             <div className="w-48 h-48 shrink-0 relative z-10">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', fontSize: '10px', fontWeight: 'bold' }}
-                      formatter={(value: number) => `$ ${Math.round(value).toLocaleString()}`}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                   <div className="text-center">
-                      <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Bruto</span>
-                      <span className="text-xs font-mono font-bold text-slate-600">$ {Math.round(result.grossMonthly).toLocaleString()}</span>
-                   </div>
+              </div>
+            </div>
+
+            <div className="w-48 h-48 shrink-0 relative z-10">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', fontSize: '10px', fontWeight: 'bold' }}
+                    formatter={(value: number) => `$ ${Math.round(value).toLocaleString()}`}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="text-center">
+                  <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Bruto</span>
+                  <span className="text-xs font-mono font-bold text-slate-600">$ {Math.round(result.grossMonthly).toLocaleString()}</span>
                 </div>
-             </div>
+              </div>
+            </div>
           </div>
 
           <div className="bg-slate-900 rounded-[40px] text-white shadow-2xl relative overflow-hidden transition-all duration-500">
-            <button 
+            <button
               onClick={() => setIsMemoryOpen(!isMemoryOpen)}
               className="w-full p-8 flex items-center justify-between group hover:bg-white/5 transition-colors text-left"
             >
@@ -465,7 +465,7 @@ const App: React.FC = () => {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
               </div>
             </button>
-            
+
             <div className={`transition-all duration-500 ease-in-out overflow-hidden ${isMemoryOpen ? 'max-h-[3000px] opacity-100 pb-8 px-8' : 'max-h-0 opacity-0'}`}>
               <div className="space-y-4 pt-2">
                 <div className="bg-indigo-900/30 rounded-3xl p-6 border border-indigo-500/20">
@@ -479,11 +479,11 @@ const App: React.FC = () => {
                     <MemoItem label="(=) Sueldo Neto Acumulado" value={result.steps.cumulativeGross - result.steps.cumulativeSocialSecurity} isCategory />
                     <MemoItem label="(+) SAC Proporcional Acumulado" value={result.steps.cumulativeSAC} sublabel="Ley 27.743 (1/12 del neto acumulado)" />
                     <div className="flex justify-between items-center py-3 px-4 bg-white/5 rounded-2xl border border-white/5 mt-2">
-                        <div className="flex flex-col">
-                          <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">GANANCIA BRUTA GRAVADA</span>
-                          <p className="text-[9px] text-slate-500">Total ingresos sujetos a impuesto</p>
-                        </div>
-                        <span className="text-xl font-mono font-black text-white">$ {Math.round(result.steps.cumulativeNetPreTax).toLocaleString()}</span>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">GANANCIA BRUTA GRAVADA</span>
+                        <p className="text-[9px] text-slate-500">Total ingresos sujetos a impuesto</p>
+                      </div>
+                      <span className="text-xl font-mono font-black text-white">$ {Math.round(result.steps.cumulativeNetPreTax).toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
@@ -493,7 +493,7 @@ const App: React.FC = () => {
                   <div className="space-y-1">
                     <MemoItem label="Ganancia No Imponible (Inc. a)" value={result.breakdown.baseDeduction} isNegative sublabel="Monto Acumulado s/ meses" />
                     <MemoItem label={`Deducción Especial (Inc. c)`} value={result.breakdown.specialDeduction} isNegative sublabel={inputs.isIndependent ? 'Apartado 1 (Indep.)' : 'Apartado 2 (Rel. Dep.)'} />
-                    
+
                     {(result.breakdown.spouseAmount > 0 || result.breakdown.childrenAmount > 0 || result.breakdown.otherDependentsAmount > 0) && (
                       <div className="mt-3 border-t border-white/5 pt-2">
                         <span className="text-[9px] font-black text-indigo-400 uppercase block mb-2">Cargas de Familia</span>
@@ -556,13 +556,13 @@ const App: React.FC = () => {
 
                     <MemoItem label="Impuesto Determinado Acumulado" value={result.cumulativeTax} sublabel="A pagar por el total del año a la fecha" />
                     <MemoItem label="(-) Retenciones Meses Anteriores" value={result.cumulativeTax - result.monthlyTax} isNegative sublabel="Prorrateo acumulado anterior" />
-                    
+
                     <div className="flex justify-between items-center py-5 px-4 bg-emerald-500 rounded-2xl shadow-lg shadow-emerald-500/20 mt-2">
-                        <div className="flex flex-col">
-                          <span className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">IMPORTE A RETENER (MES)</span>
-                          <p className="text-[9px] text-emerald-800/70 font-bold">Descuento en recibo de haberes</p>
-                        </div>
-                        <span className="text-3xl font-mono font-black text-white">$ {Math.round(result.monthlyTax).toLocaleString()}</span>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">IMPORTE A RETENER (MES)</span>
+                        <p className="text-[9px] text-emerald-800/70 font-bold">Descuento en recibo de haberes</p>
+                      </div>
+                      <span className="text-3xl font-mono font-black text-white">$ {Math.round(result.monthlyTax).toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
@@ -571,7 +571,7 @@ const App: React.FC = () => {
           </div>
 
           {/* ASESOR IA */}
-          <div className="bg-indigo-600 p-8 rounded-[40px] shadow-2xl relative overflow-hidden group">
+          {/* <div className="bg-indigo-600 p-8 rounded-[40px] shadow-2xl relative overflow-hidden group">
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md">
@@ -592,14 +592,14 @@ const App: React.FC = () => {
                 {loadingAi ? "Analizando normativa..." : "Obtener Análisis IA"}
               </button>
             </div>
-          </div>
+          </div> */}
         </div>
       </main>
 
       {/* BARRA DE ACCIONES FLOTANTE */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 w-full max-w-2xl">
         <div className="bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-[28px] p-2 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center justify-between gap-2">
-          <button 
+          <button
             onClick={() => {
               setFeedbackSent(false);
               setShowFeedbackModal(true);
@@ -609,14 +609,14 @@ const App: React.FC = () => {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
             Feedback
           </button>
-          <button 
+          <button
             onClick={() => window.open('https://cafecito.app/mexxtz', '_blank')}
             className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-amber-950 transition-all text-[11px] font-black uppercase tracking-widest shadow-lg shadow-amber-500/20 active:scale-95"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
             Donar
           </button>
-          <button 
+          <button
             onClick={exportToPDF}
             disabled={isExporting}
             className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white transition-all text-[11px] font-black uppercase tracking-widest shadow-lg shadow-indigo-600/20 active:scale-95 disabled:opacity-50"
@@ -642,7 +642,7 @@ const App: React.FC = () => {
                 </div>
                 <h3 className="text-2xl font-black text-slate-900 mb-2">¡Feedback enviado!</h3>
                 <p className="text-slate-500 text-sm mb-8 px-4">Gracias por ayudarnos a mejorar esta herramienta. Tu opinión es muy valiosa para nosotros.</p>
-                <button 
+                <button
                   onClick={() => setShowFeedbackModal(false)}
                   className="px-8 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm uppercase"
                 >
@@ -658,9 +658,9 @@ const App: React.FC = () => {
                 <form onSubmit={handleFeedbackSubmit} className="space-y-6">
                   <div>
                     <label className={labelBaseClass}>Calificación General</label>
-                    <select 
+                    <select
                       value={feedback.experience}
-                      onChange={(e) => setFeedback({...feedback, experience: e.target.value})}
+                      onChange={(e) => setFeedback({ ...feedback, experience: e.target.value })}
                       className={inputBaseClass}
                     >
                       <option>Excelente</option>
@@ -671,9 +671,9 @@ const App: React.FC = () => {
                   </div>
                   <div>
                     <label className={labelBaseClass}>Facilidad de uso</label>
-                    <select 
+                    <select
                       value={feedback.ease}
-                      onChange={(e) => setFeedback({...feedback, ease: e.target.value})}
+                      onChange={(e) => setFeedback({ ...feedback, ease: e.target.value })}
                       className={inputBaseClass}
                     >
                       <option>Muy fácil</option>
@@ -684,9 +684,9 @@ const App: React.FC = () => {
                   </div>
                   <div>
                     <label className={labelBaseClass}>Sugerencias de mejora</label>
-                    <textarea 
+                    <textarea
                       value={feedback.suggestions}
-                      onChange={(e) => setFeedback({...feedback, suggestions: e.target.value})}
+                      onChange={(e) => setFeedback({ ...feedback, suggestions: e.target.value })}
                       className={inputBaseClass + " min-h-[100px] py-3"}
                       placeholder="¿Cómo podríamos mejorar?"
                       required
@@ -694,10 +694,10 @@ const App: React.FC = () => {
                   </div>
                   <div>
                     <label className={labelBaseClass}>Probabilidad de recomendación (0-10)</label>
-                    <input 
+                    <input
                       type="range" min="0" max="10" step="1"
                       value={feedback.recommendation}
-                      onChange={(e) => setFeedback({...feedback, recommendation: Number(e.target.value)})}
+                      onChange={(e) => setFeedback({ ...feedback, recommendation: Number(e.target.value) })}
                       className="w-full accent-indigo-600"
                     />
                     <div className="flex justify-between text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">
@@ -706,8 +706,8 @@ const App: React.FC = () => {
                       <span>Seguro</span>
                     </div>
                   </div>
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     disabled={isSendingFeedback}
                     className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-sm uppercase shadow-xl hover:bg-indigo-500 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
@@ -739,7 +739,7 @@ const App: React.FC = () => {
               Gracias por usar nuestro servicio de cálculo impositivo. Si esta herramienta le ha sido de utilidad, por favor considere realizar una donación para mantener el servidor y las actualizaciones legales.
             </p>
             <div className="flex flex-col gap-3">
-              <button 
+              <button
                 onClick={() => {
                   window.open('https://cafecito.app/mexxtz', '_blank');
                   setShowThanksModal(false);
@@ -749,7 +749,7 @@ const App: React.FC = () => {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
                 Contribuir con una donación
               </button>
-              <button 
+              <button
                 onClick={() => setShowThanksModal(false)}
                 className="w-full py-4 text-[10px] font-black uppercase text-slate-400 hover:text-slate-600 transition-colors"
               >
@@ -810,86 +810,86 @@ const App: React.FC = () => {
             <p className="text-slate-500 font-bold uppercase text-xs tracking-widest">Reporte Técnico de Retención Mensual</p>
           </div>
           <div className="text-right">
-            <p className="text-xl font-black text-slate-900">{MONTHS[inputs.month-1]} {inputs.period}</p>
+            <p className="text-xl font-black text-slate-900">{MONTHS[inputs.month - 1]} {inputs.period}</p>
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">ARCA (Ex-AFIP) Ley 27.743</p>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-12 mb-12">
-           <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Resumen de Haberes</p>
-              <div className="space-y-3">
-                 <div className="flex justify-between border-b border-slate-200 pb-2">
-                    <span className="text-sm font-medium text-slate-600">Sueldo Bruto</span>
-                    <span className="text-sm font-bold">$ {inputs.grossSalary.toLocaleString()}</span>
-                 </div>
-                 <div className="flex justify-between border-b border-slate-200 pb-2">
-                    <span className="text-sm font-medium text-slate-600">Neto Pre-Impuesto</span>
-                    <span className="text-sm font-bold">$ {Math.round(result.netMonthlyPreTax).toLocaleString()}</span>
-                 </div>
-                 <div className="flex justify-between text-rose-600 pt-2">
-                    <span className="text-sm font-black uppercase">Retención Ganancias</span>
-                    <span className="text-sm font-black">$ {Math.round(result.monthlyTax).toLocaleString()}</span>
-                 </div>
-                 <div className="flex justify-between text-emerald-600 pt-4 border-t-2 border-slate-200">
-                    <span className="text-base font-black uppercase">Sueldo de Bolsillo</span>
-                    <span className="text-base font-black">$ {Math.round(result.netMonthlyPostTax).toLocaleString()}</span>
-                 </div>
+          <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Resumen de Haberes</p>
+            <div className="space-y-3">
+              <div className="flex justify-between border-b border-slate-200 pb-2">
+                <span className="text-sm font-medium text-slate-600">Sueldo Bruto</span>
+                <span className="text-sm font-bold">$ {inputs.grossSalary.toLocaleString()}</span>
               </div>
-           </div>
-           
-           <div className="p-8">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Datos del Contribuyente</p>
-              <div className="grid grid-cols-1 gap-2 text-xs">
-                 <p><span className="text-slate-400 font-bold uppercase mr-2">Condición:</span> {inputs.isIndependent ? 'Autónomo' : 'Relación de Dependencia'}</p>
-                 <p><span className="text-slate-400 font-bold uppercase mr-2">Cargas Familia:</span> {inputs.deductions.children + (inputs.deductions.spouse ? 1 : 0)} persona(s)</p>
-                 <p><span className="text-slate-400 font-bold uppercase mr-2">Tramo Alícuota:</span> {(currentScaleStep.rate * 100).toFixed(0)}%</p>
-                 <p><span className="text-slate-400 font-bold uppercase mr-2">Tasa Efectiva:</span> {((result.monthlyTax / (result.grossMonthly || 1)) * 100).toFixed(2)}%</p>
+              <div className="flex justify-between border-b border-slate-200 pb-2">
+                <span className="text-sm font-medium text-slate-600">Neto Pre-Impuesto</span>
+                <span className="text-sm font-bold">$ {Math.round(result.netMonthlyPreTax).toLocaleString()}</span>
               </div>
-           </div>
+              <div className="flex justify-between text-rose-600 pt-2">
+                <span className="text-sm font-black uppercase">Retención Ganancias</span>
+                <span className="text-sm font-black">$ {Math.round(result.monthlyTax).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-emerald-600 pt-4 border-t-2 border-slate-200">
+                <span className="text-base font-black uppercase">Sueldo de Bolsillo</span>
+                <span className="text-base font-black">$ {Math.round(result.netMonthlyPostTax).toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-8">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Datos del Contribuyente</p>
+            <div className="grid grid-cols-1 gap-2 text-xs">
+              <p><span className="text-slate-400 font-bold uppercase mr-2">Condición:</span> {inputs.isIndependent ? 'Autónomo' : 'Relación de Dependencia'}</p>
+              <p><span className="text-slate-400 font-bold uppercase mr-2">Cargas Familia:</span> {inputs.deductions.children + (inputs.deductions.spouse ? 1 : 0)} persona(s)</p>
+              <p><span className="text-slate-400 font-bold uppercase mr-2">Tramo Alícuota:</span> {(currentScaleStep.rate * 100).toFixed(0)}%</p>
+              <p><span className="text-slate-400 font-bold uppercase mr-2">Tasa Efectiva:</span> {((result.monthlyTax / (result.grossMonthly || 1)) * 100).toFixed(2)}%</p>
+            </div>
+          </div>
         </div>
 
         <div className="mb-12">
-           <h3 className="text-sm font-black uppercase tracking-widest text-slate-900 mb-6 border-l-4 border-indigo-600 pl-4">Detalle de Deducciones Acumuladas</h3>
-           <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                 <tr className="bg-slate-900 text-white font-bold uppercase tracking-widest">
-                    <th className="p-4 rounded-tl-xl">Concepto</th>
-                    <th className="p-4 text-right rounded-tr-xl">Monto Acumulado ($)</th>
-                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 border-x border-b border-slate-100">
-                 <tr><td className="p-4 font-medium">Ganancia No Imponible (MNI)</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.baseDeduction).toLocaleString()}</td></tr>
-                 <tr><td className="p-4 font-medium">Deducción Especial (Inc. c)</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.specialDeduction).toLocaleString()}</td></tr>
-                 {result.breakdown.spouseAmount > 0 && <tr><td className="p-4 font-medium">Carga: Cónyuge / Conviviente</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.spouseAmount).toLocaleString()}</td></tr>}
-                 {result.breakdown.childrenAmount > 0 && <tr><td className="p-4 font-medium">Carga: Hijos / Hijastros</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.childrenAmount).toLocaleString()}</td></tr>}
-                 {result.breakdown.medicalInsuranceAmount > 0 && <tr><td className="p-4 font-medium">Medicina Prepaga</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.medicalInsuranceAmount).toLocaleString()}</td></tr>}
-                 {result.breakdown.rentAmount > 0 && <tr><td className="p-4 font-medium">Alquiler Vivienda (Tope MNI)</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.rentAmount).toLocaleString()}</td></tr>}
-                 {result.breakdown.educationAmount > 0 && <tr><td className="p-4 font-medium">Gastos Educativos</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.educationAmount).toLocaleString()}</td></tr>}
-                 <tr className="bg-slate-50 font-black">
-                    <td className="p-4">TOTAL DEDUCCIONES COMPUTADAS</td>
-                    <td className="p-4 text-right font-mono">$ {Math.round(result.totalDeductionsCumulative).toLocaleString()}</td>
-                 </tr>
-              </tbody>
-           </table>
+          <h3 className="text-sm font-black uppercase tracking-widest text-slate-900 mb-6 border-l-4 border-indigo-600 pl-4">Detalle de Deducciones Acumuladas</h3>
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="bg-slate-900 text-white font-bold uppercase tracking-widest">
+                <th className="p-4 rounded-tl-xl">Concepto</th>
+                <th className="p-4 text-right rounded-tr-xl">Monto Acumulado ($)</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 border-x border-b border-slate-100">
+              <tr><td className="p-4 font-medium">Ganancia No Imponible (MNI)</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.baseDeduction).toLocaleString()}</td></tr>
+              <tr><td className="p-4 font-medium">Deducción Especial (Inc. c)</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.specialDeduction).toLocaleString()}</td></tr>
+              {result.breakdown.spouseAmount > 0 && <tr><td className="p-4 font-medium">Carga: Cónyuge / Conviviente</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.spouseAmount).toLocaleString()}</td></tr>}
+              {result.breakdown.childrenAmount > 0 && <tr><td className="p-4 font-medium">Carga: Hijos / Hijastros</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.childrenAmount).toLocaleString()}</td></tr>}
+              {result.breakdown.medicalInsuranceAmount > 0 && <tr><td className="p-4 font-medium">Medicina Prepaga</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.medicalInsuranceAmount).toLocaleString()}</td></tr>}
+              {result.breakdown.rentAmount > 0 && <tr><td className="p-4 font-medium">Alquiler Vivienda (Tope MNI)</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.rentAmount).toLocaleString()}</td></tr>}
+              {result.breakdown.educationAmount > 0 && <tr><td className="p-4 font-medium">Gastos Educativos</td><td className="p-4 text-right font-mono">$ {Math.round(result.breakdown.educationAmount).toLocaleString()}</td></tr>}
+              <tr className="bg-slate-50 font-black">
+                <td className="p-4">TOTAL DEDUCCIONES COMPUTADAS</td>
+                <td className="p-4 text-right font-mono">$ {Math.round(result.totalDeductionsCumulative).toLocaleString()}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <div className="bg-slate-900 text-white p-8 rounded-3xl">
-           <div className="flex justify-between items-center">
-              <div>
-                 <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Base Imponible Neta Acumulada</p>
-                 <p className="text-xl font-mono font-black">$ {Math.round(result.taxableIncomeCumulative).toLocaleString()}</p>
-              </div>
-              <div className="text-right">
-                 <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Impuesto a Retener en Recibo</p>
-                 <p className="text-4xl font-mono font-black">$ {Math.round(result.monthlyTax).toLocaleString()}</p>
-              </div>
-           </div>
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Base Imponible Neta Acumulada</p>
+              <p className="text-xl font-mono font-black">$ {Math.round(result.taxableIncomeCumulative).toLocaleString()}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Impuesto a Retener en Recibo</p>
+              <p className="text-4xl font-mono font-black">$ {Math.round(result.monthlyTax).toLocaleString()}</p>
+            </div>
+          </div>
         </div>
 
         <div className="mt-16 pt-8 border-t border-slate-100 text-[9px] text-slate-400 text-center uppercase font-black tracking-[0.2em] space-y-2">
-           <p>Este documento es una estimación informativa no vinculante.</p>
-           <p>Calculadora Ganancias Argentina 🇦🇷 • Generado automáticamente</p>
+          <p>Este documento es una estimación informativa no vinculante.</p>
+          <p>Calculadora Ganancias Argentina 🇦🇷 • Generado automáticamente</p>
         </div>
       </div>
     </div>
