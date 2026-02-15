@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="7" fill="#1e293b"/>
+  <path d="M0 10.6h32v10.8H0z" fill="#74acdf"/>
+  <path d="M0 14h32v4H0z" fill="#fff"/>
+  <circle cx="16" cy="16" r="3.5" fill="#f6b43e"/>
+  <text x="16" y="28" text-anchor="middle" font-family="sans-serif" font-weight="900" font-size="8" fill="#fff" letter-spacing="1">ARCA</text>
+</svg>
